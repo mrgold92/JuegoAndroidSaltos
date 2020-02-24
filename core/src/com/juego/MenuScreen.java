@@ -69,12 +69,9 @@ public class MenuScreen extends BaseScreen {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
                 if (game.getManager().update(1000)) {
-
                     GameScreen gameScreen = new GameScreen(game);
                     game.setPantalla(gameScreen);
                 }
-
-
             }
         });
 

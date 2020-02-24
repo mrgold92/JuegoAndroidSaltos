@@ -78,15 +78,14 @@ public class PlayerEntity extends Actor {
         super.act(delta);
 
         if (Gdx.input.justTouched()) {
-
             saltar();
-
-
         }
+
         if (debeSaltar) {
             debeSaltar = false;
             saltar();
         }
+
         if (vivo) {
             float velY = body.getLinearVelocity().y;
             body.setLinearVelocity(velocidad, velY);

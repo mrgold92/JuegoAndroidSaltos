@@ -68,20 +68,14 @@ class GameScreen extends BaseScreen {
 
         world.setContactListener(new ContactListener() {
 
-            private boolean areCollided(Contact contact, Object userA, Object userB) {
-                Object userDataA = contact.getFixtureA().getUserData();
-                Object userDataB = contact.getFixtureB().getUserData();
-
-                // This is not in the video! It is a good idea to check that user data is not null.
-                // Sometimes you forget to put user data or you get collisions by entities you didn't
-                // expect. Not preventing thi.newSound( Gdx.files.getFileHandle("sound/warning.wav", FileType.Interns will probably result in a NullPointerException.
-                if (userDataA == null || userDataB == null) {
+            private boolean areCollided(Contact contact, Object dataA, Object userB) {
+                Object DataA = contact.getFixtureA().getUserData();
+                Object DataB = contact.getFixtureB().getUserData();
+                if (DataA == null || DataB == null) {
                     return false;
                 }
-
-                // Because you never know what is A and what is B, you have to do both checks.
-                return (userDataA.equals(userA) && userDataB.equals(userB)) ||
-                        (userDataA.equals(userB) && userDataB.equals(userA));
+                return (DataA.equals(dataA) && DataB.equals(userB)) ||
+                        (DataA.equals(userB) && DataB.equals(dataA));
             }
 
             @Override
@@ -94,14 +88,11 @@ class GameScreen extends BaseScreen {
                     playerEntity.setSaltando(false);
                     if (Gdx.input.isTouched()) {
                         playerEntity.setSaltando(true);
-
-
                     }
                 }
 
                 if (areCollided(contact, "player", "enemigo")) {
                     playerEntity.setVivo(false);
-
                     stage.addAction(Actions.sequence(Actions.delay(1.5f), Actions.run(new Runnable() {
                         @Override
                         public void run() {
