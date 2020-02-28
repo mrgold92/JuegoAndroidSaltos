@@ -1,6 +1,7 @@
 package com.juego;
 
 import com.badlogic.gdx.Files;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.Color;
@@ -26,6 +27,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import java.util.ArrayList;
 
+import entities.BanderaEntity;
 import entities.EnemigoEntity;
 import entities.PlayerEntity;
 import entities.SueloEntity;
@@ -40,10 +42,11 @@ class GameScreen extends BaseScreen {
     public SpriteBatch spriteBatch;
     private Texture fondo;
     private Sprite sprite;
-    private Music musica, salto;
+    public Music musica, salto;
     private Label puntuacionLabel;
-    BitmapFont font;
+    private BitmapFont font;
     private int puntuacion;
+    private BanderaEntity bandera;
 
     public GameScreen(final MainGame game) {
         super(game);
@@ -51,14 +54,9 @@ class GameScreen extends BaseScreen {
         musica = Gdx.audio.newMusic(Gdx.files.getFileHandle("musica/friends.wav", Files.FileType.Internal));
 
         font = new BitmapFont();
-        font.setColor(Color.BLUE);
-        font.getData().setScale(1, 1);
+        font.setColor(Color.NAVY);
+        font.getData().setScale(3, 3);
         puntuacion = -1;
-
-
-
-
-
 
 
         enemigos = new ArrayList<>();
@@ -82,7 +80,7 @@ class GameScreen extends BaseScreen {
             public void beginContact(Contact contact) {
                 if (areCollided(contact, "player", "suelo")) {
 
-                    if (playerEntity.isVivo()){
+                    if (playerEntity.isVivo()) {
                         puntuacion++;
                     }
                     playerEntity.setSaltando(false);
@@ -92,13 +90,30 @@ class GameScreen extends BaseScreen {
                 }
 
                 if (areCollided(contact, "player", "enemigo")) {
-                    playerEntity.setVivo(false);
-                    stage.addAction(Actions.sequence(Actions.delay(1.5f), Actions.run(new Runnable() {
-                        @Override
-                        public void run() {
-                            game.setScreen(game.finScreen);
-                        }
-                    })));
+
+                    musica.stop();
+                    stage.addAction(Actions.sequence(
+                            Actions.delay(0.5f),
+                            Actions.run(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    game.setPantalla(game.GameOverScreen);
+                                }
+                            })));
+                }
+
+                if (areCollided(contact, "player", "bandera")) {
+                    musica.stop();
+                    stage.addAction(Actions.sequence(
+                            Actions.delay(0.5f),
+                            Actions.run(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    game.setPantalla(game.winnerScreen);
+                                }
+                            })));
                 }
             }
 
@@ -136,11 +151,12 @@ class GameScreen extends BaseScreen {
 
         fondo = new Texture("fondo/img5.png");
         sprite = new Sprite(fondo);
-        spriteBatch = new SpriteBatch(10);
+        spriteBatch = new SpriteBatch(20);
 
 
         Texture texturaSuelo = game.getManager().get("suelo.png");
         Texture texturaPlayer = game.getManager().get("player.png");
+        Texture texturaBandera = game.getManager().get("final.png");
 
         sueloEntity = new SueloEntity(texturaSuelo, world, new Vector2(0, 0), 320, 10);
         playerEntity = new PlayerEntity(texturaPlayer, world, new Vector2(0f, 1.4f));
@@ -154,16 +170,16 @@ class GameScreen extends BaseScreen {
         enemigos.add(crearPersonajes.nuevoEnemigo(world, 150, 1));
         enemigos.add(crearPersonajes.nuevoEnemigo(world, 170, 1));
 
-
+        bandera = new BanderaEntity(texturaBandera, world, new Vector2(180f, 1.5f));
 
         for (EnemigoEntity enemigo : enemigos) {
             stage.addActor(enemigo);
         }
 
-      
 
         stage.addActor(sueloEntity);
         stage.addActor(playerEntity);
+        stage.addActor(bandera);
 
 
     }
@@ -178,7 +194,7 @@ class GameScreen extends BaseScreen {
         spriteBatch.begin();
 
         spriteBatch.draw(sprite, 0, 12, Gdx.graphics.getWidth(), Gdx.graphics.getHeight() + 60f);
-        font.draw(spriteBatch, "Puntuación: "+puntuacion, 30, 320);
+        font.draw(spriteBatch, "Puntuación: " + puntuacion, 30, 400f);
 
 
         spriteBatch.end();
@@ -204,10 +220,16 @@ class GameScreen extends BaseScreen {
     public void hide() {
         super.hide();
         sueloEntity.detach();
+        sueloEntity.remove();
         playerEntity.detach();
+        playerEntity.remove();
         for (EnemigoEntity enemigo : enemigos) {
             enemigo.detach();
+            enemigo.remove();
         }
+
+        bandera.detach();
+        bandera.remove();
     }
 
     @Override
@@ -215,5 +237,9 @@ class GameScreen extends BaseScreen {
         super.dispose();
         stage.dispose();
         world.dispose();
+    }
+
+    public Music getMusica(){
+        return this.musica;
     }
 }
